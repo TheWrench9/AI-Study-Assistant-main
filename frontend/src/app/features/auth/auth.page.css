@@ -1,0 +1,174 @@
+/*
+ * Accueil public : accroche à gauche, formulaire à droite (empilés sur mobile),
+ * puis les fonctions de l'application sur toute la largeur. Jetons « pages publiques » de styles.css.
+ */
+:host {
+  display: block;
+}
+
+.auth-page {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-12), 8vw, 6.5rem);
+  margin-top: var(--space-2);
+}
+
+.hero {
+  display: grid;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+.hero__intro {
+  min-width: 0;
+}
+
+/* Formulaire */
+.auth {
+  width: 100%;
+  max-width: 27rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+@media (min-width: 960px) {
+  .auth-page {
+    margin-top: var(--space-8);
+  }
+
+  .hero {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: var(--space-12);
+  }
+
+  .hero__intro {
+    padding-top: var(--space-6);
+  }
+
+  .auth {
+    justify-self: end;
+    max-width: 29rem;
+    position: sticky;
+    top: 6rem;
+    padding: var(--space-10);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    box-shadow: var(--shadow-card-lg);
+  }
+}
+
+.auth__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.auth__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.label {
+  font-weight: 500;
+}
+
+.field {
+  min-height: 3rem;
+  padding: 0 var(--space-4);
+}
+
+.alert {
+  border-radius: var(--radius);
+}
+
+/* Bouton principal : pilule à l'encre, flèche qui avance au survol */
+.btn--pill {
+  align-self: flex-start;
+  min-height: 3.25rem;
+  margin-top: var(--space-2);
+  padding: 0 var(--space-6) 0 var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-size: var(--text-md);
+  box-shadow: none;
+}
+
+.btn--pill:hover:not(:disabled) {
+  background: var(--btn-primary-hover);
+}
+
+.btn__arrow {
+  transition: transform var(--duration) var(--ease);
+}
+
+.btn--pill:hover:not(:disabled) .btn__arrow {
+  transform: translateX(3px);
+}
+
+@media (max-width: 479px) {
+  .btn--pill {
+    align-self: stretch;
+  }
+}
+
+.switch {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.switch a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: var(--space-1);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+}
+
+.switch a:hover {
+  color: var(--accent);
+}
+
+/* Inscription */
+.field-hint {
+  margin: var(--space-1) 0 0;
+}
+
+.level-description {
+  margin: var(--space-2) 0 0;
+}
+
+.segmented {
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+
+.segment {
+  border-radius: var(--radius-pill);
+  min-height: 2.5rem;
+}
+
+.segment[aria-checked='true'] {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}

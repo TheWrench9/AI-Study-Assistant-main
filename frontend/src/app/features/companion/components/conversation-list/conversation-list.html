@@ -1,0 +1,55 @@
+<section class="section" aria-labelledby="recents-title">
+  <h2 id="recents-title" class="section__head">
+    Récents
+    @if (loading()) {
+      <app-loader size="sm" />
+    }
+  </h2>
+
+  @if (conversations().length === 0) {
+    @if (!loading()) {
+      <p class="empty">
+        Aucune conversation ·
+        <button type="button" class="link" (click)="newConversation.emit()">en démarrer une</button>
+      </p>
+    }
+  } @else if (filtered().length === 0) {
+    <p class="empty">Aucune conversation ne correspond.</p>
+  }
+
+  <ul class="list" aria-labelledby="recents-title">
+    @for (conversation of filtered(); track conversation.id) {
+      <li class="row" [class.row--active]="conversation.id === activeId()">
+        @if (editingId() === conversation.id) {
+          <label class="sr-only" [for]="'rename-' + conversation.id">Nouveau titre de la conversation</label>
+          <input
+            #renameInput
+            class="field field--sm rename"
+            type="text"
+            maxlength="120"
+            [id]="'rename-' + conversation.id"
+            [value]="conversation.title"
+            (keydown)="onRenameKeydown($event, conversation)"
+            (blur)="commitRename(conversation, renameInput.value)"
+          />
+        } @else {
+          <button
+            type="button"
+            class="item"
+            [attr.aria-current]="conversation.id === activeId() ? 'true' : null"
+            [title]="conversation.title"
+            (click)="selectConversation.emit(conversation.id)"
+          >
+            <span class="name">{{ conversation.title }}</span>
+          </button>
+          <app-row-menu
+            class="row__menu"
+            [label]="'Actions pour la conversation ' + conversation.title"
+            [items]="menuItems"
+            (pick)="onMenu($event, conversation)"
+          />
+        }
+      </li>
+    }
+  </ul>
+</section>

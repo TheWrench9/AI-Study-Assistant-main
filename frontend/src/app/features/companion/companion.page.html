@@ -1,0 +1,122 @@
+<!--
+  Nouvelle conversation : accueil centré (titre, saisie, actions). Sinon : fil des échanges, saisie collée en bas.
+  Un PDF glissé n'importe où sur la page est importé (surcouche « Dépose ton PDF ici »).
+-->
+<div
+  class="page"
+  [class.page--home]="home()"
+  (dragover)="upload.onDragOver($event)"
+  (dragleave)="upload.onDragLeave($event)"
+  (drop)="upload.onDrop($event)"
+>
+  @if (home()) {
+    <p class="kicker home__kicker">Tuteur · Examens · Flashcards · Résumés</p>
+    <h1 class="home__title">Que veux-tu <span class="title-accent">réviser aujourd'hui&nbsp;?</span></h1>
+  } @else {
+    <h1 class="sr-only">Assistant</h1>
+  }
+
+  @if (error(); as message) {
+    <app-error-state
+      class="banner"
+      [message]="message"
+      [retryable]="canRetry()"
+      [dismissible]="true"
+      (retry)="retryFailed()"
+      (dismiss)="dismissError()"
+    />
+  }
+
+  @if (!home()) {
+    @if (conversations.loadingMessages()) {
+      <div class="card loading-messages">
+        <app-skeleton [lines]="5" label="Chargement de la conversation…" />
+      </div>
+    } @else {
+      <app-companion-thread
+        class="thread"
+        [messages]="conversations.messages()"
+        [progress]="companion.progress()"
+        [now]="companion.now()"
+        (chooseCourse)="onChooseCourse($event)"
+        (retry)="onRetryMessage($event)"
+      />
+    }
+  }
+
+  @for (job of runningExams(); track job.course) {
+    <app-step-progress
+      class="exam-progress"
+      [title]="'Examen « ' + job.course + ' » en préparation'"
+      [steps]="examSteps"
+      [startedAt]="job.startedAt"
+      [now]="examJobs.now()"
+      [estimateS]="examEstimateS"
+      note="Le PDF se téléchargera tout seul, et restera dans « Examens »."
+    />
+  }
+
+  <!-- Zone de saisie : fichier en cours d'import, champ avec « + » et choix du cours, actions rapides dessous -->
+  <div class="composer">
+    <app-upload-panel #upload [compact]="true" (uploaded)="onUploaded($event)" />
+    <app-question-input
+      [(text)]="draft"
+      [loading]="asking()"
+      [course]="selectedCourse()"
+      [showTarget]="false"
+      label="Ta demande"
+      placeholder="Demande ce que tu veux…"
+      (ask)="send($event)"
+    >
+      <div composerTools class="tools">
+        <button
+          type="button"
+          class="tool"
+          aria-label="Importer un PDF"
+          title="Importer un PDF (50 Mo max)"
+          (click)="upload.openFilePicker()"
+        >
+          <app-icon name="plus" [size]="18" />
+        </button>
+        <app-course-picker
+          [courses]="courses()"
+          [selected]="selectedCourse()"
+          [loading]="coursesLoading()"
+          (selectedChange)="onSelectCourse($event)"
+          (importRequested)="upload.openFilePicker()"
+        />
+      </div>
+    </app-question-input>
+    @if (courseHint(); as hint) {
+      <p class="course-hint" role="status">{{ hint }}</p>
+    }
+    <!-- Affichées sur l'accueil, ou quand la zone de saisie a le focus -->
+    <ul class="quick-actions" [class.quick-actions--shown]="home()" aria-label="Demandes rapides">
+      @for (action of quickActions; track action.label) {
+        <li>
+          <button
+            type="button"
+            class="quick"
+            [disabled]="asking() && action.message !== null"
+            (mousedown)="$event.preventDefault()"
+            (click)="onQuickAction(action)"
+          >
+            <app-icon [name]="action.icon" [size]="16" />
+            {{ action.label }}
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+
+  @if (upload.dragging()) {
+    <div class="drop" aria-hidden="true">
+      <div class="drop__inner">
+        <app-icon name="upload" [size]="28" />
+        Dépose ton PDF ici
+      </div>
+    </div>
+  }
+</div>
+
+<app-exam-dialog [course]="examCourse()" (generate)="onGenerateExam($event)" (closed)="onExamDialogClosed()" />

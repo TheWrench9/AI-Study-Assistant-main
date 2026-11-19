@@ -1,0 +1,163 @@
+<header class="page-header">
+  <p class="kicker">Révision · Recto / verso</p>
+  <h1>Flashcards <span class="title-accent">à réviser</span></h1>
+  <p class="lede">Des cartes question / réponse tirées de tes cours, pour réviser les notions clés.</p>
+</header>
+
+<div class="layout">
+  <aside class="sidebar" aria-label="Choix du cours">
+    <app-course-selector
+      [courses]="courses()"
+      [selected]="selectedCourse()"
+      [loading]="coursesLoading()"
+      [allowAll]="false"
+      [actions]="false"
+      emptyAction="link"
+      [jobs]="jobs.jobs()"
+      jobLabel="Flashcards en cours…"
+      [now]="jobs.now()"
+      (selectedChange)="onSelectCourse($event)"
+    />
+  </aside>
+
+  <section class="main" aria-label="Flashcards du cours">
+    @if (selectedCourse(); as course) {
+      @if (reviewCards(); as cards) {
+        <app-flashcard-review [cards]="cards" [course]="course" (answered)="onAnswered($event)" (exit)="stopReview()" />
+      } @else {
+        <section class="card decks" aria-labelledby="decks-title">
+          <div class="decks__header">
+            <h2 id="decks-title" class="card__title">Mes paquets</h2>
+            @if (decksLoading()) {
+              <app-loader size="sm" />
+            }
+          </div>
+          @if (decks().length === 0) {
+            @if (decksLoading()) {
+              <app-skeleton variant="rows" [lines]="2" label="Chargement des paquets…" />
+            } @else {
+              <app-empty-state
+                icon="cards"
+                title="Aucun paquet pour ce cours"
+                text="Choisis le nombre de cartes ci-dessous et génère ton premier paquet."
+                [compact]="true"
+              />
+            }
+          } @else {
+            <ul class="deck-list">
+              @for (deck of decks(); track deck.id; let first = $first) {
+                <li class="deck" [class.deck--latest]="first">
+                  <div class="deck__info">
+                    <p class="deck__meta">
+                      <strong>{{ deck.card_count }} carte{{ deck.card_count > 1 ? 's' : '' }}</strong>
+                      · générées le {{ deckDate(deck) }}
+                    </p>
+                    @if (first) {
+                      <span class="deck__badge">Dernier paquet</span>
+                    }
+                  </div>
+                  <div class="deck__actions">
+                    <button
+                      type="button"
+                      class="btn btn--sm"
+                      [class.btn--ghost]="!first"
+                      [disabled]="opening() !== null"
+                      [attr.aria-label]="'Réviser le paquet du ' + deckDate(deck)"
+                      (click)="startReview(deck)"
+                    >
+                      {{ opening() === deck.id ? 'Ouverture…' : 'Réviser' }}
+                    </button>
+                    <button
+                      type="button"
+                      class="icon-btn icon-btn--danger"
+                      [attr.aria-label]="'Supprimer le paquet du ' + deckDate(deck)"
+                      title="Supprimer le paquet"
+                      (click)="deleteDeck(deck)"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M4 7h16" /><path d="M10 11v6M14 11v6" /><path d="m6 7 1 13h10l1-13" /><path d="M9 7V4h6v3" />
+                      </svg>
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
+        <div class="card setup">
+          <h2 class="card__title">{{ decks().length ? 'Nouveau paquet' : 'Générer des flashcards' }}</h2>
+          <p class="hint course-name">Cours : <strong>{{ course }}</strong></p>
+
+          <div>
+            <span id="card-count-label" class="label">Nombre de cartes</span>
+            <div class="segmented" role="radiogroup" aria-labelledby="card-count-label">
+              @for (n of counts; track n) {
+                <button
+                  type="button"
+                  role="radio"
+                  class="segment"
+                  [attr.aria-checked]="n === count()"
+                  [tabIndex]="n === count() ? 0 : -1"
+                  (click)="setCount(n)"
+                  (keydown)="onRadioKeydown($event, counts, n, setCount)"
+                >
+                  {{ n }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <p class="estimate">
+            Durée estimée : <strong>environ {{ minutes() }} min</strong>
+            <span class="hint">· génération en arrière-plan, tu peux continuer à utiliser le tuteur</span>
+          </p>
+
+          <div class="setup__actions">
+            <button
+              type="button"
+              class="btn btn--arrow"
+              [class.btn--ghost]="decks().length > 0"
+              [disabled]="generating()"
+              (click)="generate()"
+            >
+              @if (generating()) {
+                Génération en cours… {{ elapsed() }}
+              } @else {
+                {{ decks().length ? 'Générer un nouveau paquet' : 'Générer les flashcards' }}
+              }
+            </button>
+            @if (decks().length && !generating()) {
+              <span class="hint">Tes paquets précédents sont conservés.</span>
+            }
+          </div>
+
+          @if (jobStartedAt(); as startedAt) {
+            <app-step-progress
+              title="Paquet de flashcards en préparation"
+              [steps]="generationSteps"
+              [startedAt]="startedAt"
+              [now]="jobs.now()"
+              [estimateS]="minutes() * 60"
+              note="Tu peux changer de page : le paquet apparaîtra dans « Mes paquets »."
+            />
+          }
+        </div>
+      }
+    } @else {
+      <div class="card empty">
+        @if (coursesLoading()) {
+          <app-skeleton [lines]="3" label="Chargement des cours…" />
+        } @else {
+          <app-empty-state
+            icon="cards"
+            title="Aucun cours pour l'instant"
+            text="Les flashcards sont tirées de tes cours. Importe d'abord un PDF dans l'Assistant."
+          >
+            <a class="btn btn--arrow" routerLink="/companion">Importer un PDF</a>
+          </app-empty-state>
+        }
+      </div>
+    }
+  </section>
+</div>

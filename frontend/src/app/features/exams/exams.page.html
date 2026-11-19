@@ -1,0 +1,101 @@
+<header class="page-header">
+  <p class="kicker">Entraînement · Sujets notés sur 20</p>
+  <h1>Mes <span class="title-accent">examens</span></h1>
+  <p class="lede">Tous les examens générés, à retélécharger quand tu veux.</p>
+</header>
+
+@if (running().length) {
+  <div class="running">
+    @for (job of running(); track job.course) {
+      <app-step-progress
+        [title]="'Examen « ' + job.course + ' » en préparation'"
+        [steps]="examSteps"
+        [startedAt]="job.startedAt"
+        [now]="jobs.now()"
+        [estimateS]="examEstimateS"
+        note="Il apparaîtra dans l'historique dès qu'il sera prêt."
+      />
+    }
+  </div>
+}
+
+@if (error(); as message) {
+  <app-error-state class="error" title="Historique indisponible" [message]="message" [busy]="loading()" (retry)="reload()" />
+}
+
+<section class="card" aria-labelledby="exams-title">
+  <div class="header">
+    <h2 id="exams-title" class="card__title">Historique</h2>
+    @if (loading()) {
+      <app-loader size="sm" />
+    } @else {
+      <span class="count">{{ exams().length }}</span>
+    }
+  </div>
+
+  @if (exams().length === 0) {
+    @if (loading()) {
+      <app-skeleton variant="rows" [lines]="3" label="Chargement des examens…" />
+    } @else if (!error()) {
+      <app-empty-state
+        icon="exam"
+        title="Aucun examen pour l'instant"
+        text="Dans « Mes cours », clique sur « Examen » sous un cours (ou sur « Examen » sous la zone de saisie de l'Assistant) : un sujet noté sur 20, avec son corrigé, en PDF."
+      >
+        <a class="btn btn--arrow" routerLink="/courses">Générer un examen</a>
+      </app-empty-state>
+    }
+  } @else {
+    <div class="table-wrap">
+      <table class="exams">
+        <caption class="sr-only">Examens générés, du plus récent au plus ancien</caption>
+        <thead>
+          <tr>
+            <th scope="col">Cours</th>
+            <th scope="col">Type</th>
+            <th scope="col">Difficulté</th>
+            <th scope="col" class="num">Questions</th>
+            <th scope="col">Date</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (exam of exams(); track exam.id) {
+            <tr>
+              <td class="course" [title]="exam.course">{{ exam.course }}</td>
+              <td>
+                {{ formatLabel(exam.format) }}
+                @if (!exam.include_answers) {
+                  <span class="tag">sans corrigé</span>
+                }
+              </td>
+              <td>{{ difficultyLabel(exam.difficulty) }}</td>
+              <td class="num">{{ exam.question_count }}</td>
+              <td class="date">{{ date(exam) }}</td>
+              <td class="actions">
+                <button
+                  type="button"
+                  class="btn btn--sm"
+                  [disabled]="isBusy(exam.id)"
+                  [attr.aria-label]="'Télécharger l\'examen ' + exam.course + ' du ' + date(exam)"
+                  (click)="download(exam)"
+                >
+                  Télécharger
+                </button>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--sm"
+                  [disabled]="isBusy(exam.id)"
+                  [attr.aria-label]="'Supprimer l\'examen ' + exam.course + ' du ' + date(exam)"
+                  (click)="remove(exam)"
+                >
+                  Supprimer
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

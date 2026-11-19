@@ -1,0 +1,198 @@
+:host {
+  display: block;
+}
+
+.banner {
+  display: block;
+}
+
+/* Colonne de lecture centrée : toute la largeur libérée, mais une largeur de ligne confortable */
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: var(--reading-width);
+  min-width: 0;
+  margin-inline: auto;
+}
+
+/* ------------------------------ Accueil ------------------------------ */
+.page--home {
+  justify-content: center;
+  gap: var(--space-6);
+  min-height: calc(100dvh - 12rem);
+  padding-bottom: 8vh;
+}
+
+.home__kicker {
+  justify-content: center;
+  margin-bottom: calc(-1 * var(--space-3));
+  text-align: center;
+}
+
+.home__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.9rem, 1.2rem + 2.4vw, 3rem);
+  font-weight: var(--heading-weight);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.loading-messages {
+  padding: var(--space-6);
+}
+
+/* Espace sous le dernier échange : la dernière réponse reste entièrement visible au-dessus de la saisie */
+.thread {
+  padding-bottom: var(--space-6);
+}
+
+/*
+ * Zone de saisie : collée en bas pendant une conversation, opaque, elle garde sa place dans le flux (les
+ * messages défilent derrière sans être recouverts). Sur l'accueil, elle est au centre.
+ */
+.composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: calc(-1 * var(--space-2));
+  padding: var(--space-3) 0 var(--space-4);
+  background: var(--bg);
+}
+
+/* Pendant une conversation : la zone de saisie reste en bas de l'écran, même si les échanges sont courts */
+.page:not(.page--home) {
+  min-height: calc(100dvh - 8.5rem);
+}
+
+.page:not(.page--home) .composer {
+  margin-top: auto;
+}
+
+.page--home .composer {
+  position: static;
+  margin-top: 0;
+  padding: 0;
+}
+
+/* Outils dans le pied du champ : « + » (importer) et choix du cours */
+.tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.tool {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease), color var(--duration) var(--ease);
+}
+
+.tool:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.course-hint {
+  margin: 0;
+  padding-left: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Actions rapides : sur l'accueil, ou quand la zone de saisie a le focus */
+.quick-actions {
+  list-style: none;
+  display: none;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+}
+
+.quick-actions--shown,
+.composer:focus-within .quick-actions {
+  display: flex;
+}
+
+.quick {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: var(--space-1) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--duration) var(--ease), background-color var(--duration) var(--ease);
+}
+
+.quick app-icon {
+  color: var(--accent);
+}
+
+.quick:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.quick:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.exam-progress {
+  display: block;
+}
+
+/* Surcouche affichée quand un PDF est glissé au-dessus de la page */
+.drop {
+  position: absolute;
+  inset: calc(-1 * var(--space-2));
+  z-index: 5;
+  border: 2px dashed var(--accent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--accent-soft) 92%, transparent);
+  pointer-events: none;
+  animation: drop-in var(--duration) var(--ease);
+}
+
+.drop__inner {
+  position: sticky;
+  top: 40vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) 0;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+  }
+}
